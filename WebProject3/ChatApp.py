@@ -17,11 +17,11 @@ def hello():
 def messageRecived():
     print( 'message was received!!!' )
 
-@socketio.on( 'connection' )
+@socketio.on('connection') # Javascript içerisinde yer alan connection
 def first_connection( json ):
     print( 'recived my event: ' + str( json ) )
-    socketio.emit( 'my response', json, callback=messageRecived )
-    return
+    socketio.emit('my response', json, callback=messageRecived )
+    return 
 
 @socketio.on('message sending')
 def message_received(json):

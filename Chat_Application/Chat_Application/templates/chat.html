@@ -1,0 +1,67 @@
+﻿<html>
+<head>
+    <title>Chat Application</title>
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/bootstrap.css')}}">
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/bootstrap.min.css')}}">
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/styles.css')}}">
+</head>
+<body>
+    <div class="container">
+        <h1>Chat Application</h1>
+        <div class="row">
+            <!-- Bağlı olan kullanıcıları gösterme kısmı-->
+            <div class="container-fixed col col-md-4 scrollit">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Users</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="{{url_for('static', filename='js/jquery.3-1-1.min.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='js/socket.io.min.js')}}"></script>
+    <script type="text/javascript">
+        var room_state = '';
+        var user_chat_array = [];
+        $(document).ready(function () {
+            namespace = "/chat";
+            var base_url = location.protocol + '//' + document.domain + ':' + location.port;
+            var my_username = window.location.pathname.split('/')[1];
+            var socket = io.connect(base_url + namespace);
+            /// kullanıcı listesine dict formatında username gönderilir.
+            socket.on('connect', function () {
+                socket.emit('register', { user: my_username });
+            });
+            //connect and disconnect
+            socket.on('user_response', function (msg) {
+                if (msg.type == 'connect') {
+                    var user_list = '';
+                    $.each(msg.data.users, function (user, value)
+                    {
+                        if (user == my_username)
+                        {
+                            user_list += '<tr><td><a href="#"><font color=red><span class="glyphicon glyphicon-user"></span> ' + user + '</td></tr></font>';
+                        } else {
+                            user_list += '<tr><td><a href="#" class="user-list" data-id="' + user + '"><span class="glyphicon glyphicon-user"></span> ' + user + ' </td></tr>';
+                        }
+                    });
+                    $('#users').html(user_list)
+                } else if (msg.type == 'exists') {
+                    window.location.href = base_url + "/?exists=1";
+                }
+            });
+            // kullanıcı listesinden bir kullanıcıya tıkladığı anda çalışacak olan kısım
+            $(document).on('click', '.user-list', function () {
+                var user_name = $(this).data('id');
+                socket.emit('private_message', { user: user_name });
+                return false;
+            });
+        })
+    </script>
+    <script type="text/javascript" src="{{url_for('static', filename='js/bootstrap.js')}}"></script>
+</body>
+</html>
