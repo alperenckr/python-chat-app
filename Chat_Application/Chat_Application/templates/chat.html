@@ -10,15 +10,28 @@
         <h1>Chat Application</h1>
         <div class="row">
             <!-- Bağlı olan kullanıcıları gösterme kısmı-->
-            <div class="container-fixed col col-md-4 scrollit">
+            <div class="col-md-4 scrollit">
                 <table class="table">
-                    <thead>
                         <tr>
                             <th>Users</th>
                         </tr>
-                    </thead>
                     <tbody id="users"></tbody>
                 </table>
+            </div>
+            <div id="message_box" class="col-md-8 " style="visibility:hidden;">
+              <div class="row-md-10 ">
+                <div class="message_holder">
+                </div>
+              </div>
+              <div class="message_send_box row row-md-2">
+                <div class="col-md-10 ">
+                  <input type="text" class="message form-control" placeholder="Messages">
+                </div>
+                  <div class="col-md-2">
+                  <button type="submit" class="btn btn-block btn-success"><span class="glyphicon glyphicon-send"></span>Send</button>
+                </div>
+              </div>
+
             </div>
         </div>
     </div>
@@ -57,8 +70,25 @@
             // kullanıcı listesinden bir kullanıcıya tıkladığı anda çalışacak olan kısım
             $(document).on('click', '.user-list', function () {
                 var user_name = $(this).data('id');
-                socket.emit('private_message', { user: user_name });
+                console.log(user_name);
+                socket.emit('private_message_request', { user: user_name, me: my_username });
                 return false;
+            });
+
+            socket.on('chat_request',function(msg){
+              var ans = window.confirm(msg+' sizinle sicak bir sohbete girmek istiyor.')
+              socket.emit('permission', {
+                perm: ans,
+                user: msg,
+                me: my_username
+              });
+            });
+
+            socket.on('allowed', function(msg){
+              $("#message_box").attr("style","visibility:visible");
+
+
+
             });
         })
     </script>

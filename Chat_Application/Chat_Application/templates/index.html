@@ -27,22 +27,20 @@
 		<script type="text/javascript" src="{{url_for('static', filename='js/bootstrap.js')}}"></script>
 		<script type="text/javascript" src="{{url_for('static', filename='js/bootstrap.min.js')}}"></script>
 		<script type="text/javascript">
-            $(document).ready(function ()
-            {
-                $('form#login').submit(function (event)
-                {
-					var url_check = "{{url_for('index')}}check/" + $('#username').val();
-                    $.get(url_check, function (data)
-                    {
-						if (data != 0) {
-							alert('Please use another username');
-						} else {
-							window.location.href = "{{url_for('index')}}" + $('#username').val();
-						}
-					});
-					return false;
-				});
-			});
+            $(document).ready(function () {
+                  $('form#login').submit(function (event) {
+							    		 var url_check = "{{url_for('index')}}check/" + $('#username').val();
+                       $.get(url_check, function (data) {
+										       if (data != 0) {
+											         alert('Please use another username');
+										       }
+											     else {
+											       window.location.href = "{{url_for('index')}}" + $('#username').val();
+										       }
+									     });
+										   return false;
+								  });
+						  });
 		</script>
 	</body>
 </html>

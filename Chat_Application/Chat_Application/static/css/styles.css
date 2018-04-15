@@ -93,21 +93,31 @@
     background-color: rgb(247, 247, 214);
 }
 
-.container-feed 
-{ 
-    border: 1px solid red; 
+.container-feed
+{
+    border: 1px solid red;
     height: 150px;
 }
 
-.container-fixed 
-{ 
-    border: 1px solid red; 
-    height: 200px;
+.container-fixed
+{
+    border: 1px solid red;
+    height: 400px;
 }
 
 .col {
   border: 1px solid #ccc;
   text-align: center;
+}
+
+.row {
+  border: 1px solid #ccc;
+  text-align: center;
+}
+
+.message_send_box
+{
+  margin-bottom: 5px;
 }
 
 .scrollit {
