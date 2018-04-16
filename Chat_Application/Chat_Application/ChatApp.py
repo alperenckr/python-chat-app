@@ -65,6 +65,11 @@ class WebChat(Namespace):
 			emit('allowed',{'user': message['me'], 'room':message['user']+message['me']},room=users[message['user']])
 			join_room(message['user']+message['me'])
 
+    #def on_message_sending(self,message):
+    #    if message['perm'] is True:
+
+
+
 
 	def on_my_ping(self):
 		emit('my_pong')
