@@ -62,7 +62,7 @@ class WebChat(Namespace):
 	def on_permission(self,message):
 		if message['perm'] is True:
 			join_room(message['user']+message['me'])
-			emit('allowed',{user: message['me'], room:message['user']+message['me']}, room=users['user'])
+			emit('allowed',{'user': message['me'], 'room':message['user']+message['me']},room=users[message['user']])
 			join_room(message['user']+message['me'])
 
 
