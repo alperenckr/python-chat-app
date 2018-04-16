@@ -7,9 +7,9 @@ app = Flask(__name__, static_url_path='/static')
 app.config['SECRET_KEY'] = "s3cr3t!"
 
 socketio = SocketIO(app, async_mode=async_mode)
-clients = []
 users = {}
-
+clients = []
+rooms = []
 thread = None
 def background_thread():
 	count = 0
@@ -19,7 +19,7 @@ def background_thread():
 
 def get_username(sid):
 	for user in users:
-		if users[user] == sid:
+		if users[user]["sid"] == sid:
 			return user
 	return False
 
@@ -47,7 +47,7 @@ class WebChat(Namespace):
 			thread = socketio.start_background_task(target=background_thread)
 
 	def on_register(self, message):
-		users[message['user']] = request.sid
+		users[message['user']] = {'sid': request.sid, 'ip': request.remote_addr, 'state':True}
 		emit('user_response', {
 				'type': 'connect',
 				'message': '{0} is connected to the server'.format(message['user']),
@@ -57,19 +57,29 @@ class WebChat(Namespace):
 			}, broadcast=True)
 
 	def on_private_message_request(self, message):
-		emit('chat_request',message['me'],room=users[message['user']])
+		if message['user']+message['me'] not in rooms and message['me']+message['user'] not in rooms:
+			join_room(message['me']+message['user'])
+			emit('chat_request',message['me'],room=users[message['user']]['sid'])
+		else:
+			emit('already allowed', message, room=request.sid)
 
 	def on_permission(self,message):
 		if message['perm'] is True:
 			join_room(message['user']+message['me'])
-			emit('allowed',{'user': message['me'], 'room':message['user']+message['me']},room=users[message['user']])
-			join_room(message['user']+message['me'])
+			rooms.append(message['user']+message['me'])
+			emit('allowed', { 'user': message['me'], 'room': message['user']+message['me']},room=users[message['user']]['sid'])
 
-    #def on_message_sending(self,message):
-    #    if message['perm'] is True:
+	def on_sendmessage(self,message):
+		print("asdasdasdasdasd")
+		emit('take_message', message, room=message['me']+message['user'])
+		if message['me']+message['user'] not in rooms:
+			emit('take_message', message, room=message['user']+message['me'])
 
 
 
+
+	def on_message(self,message):
+		print(message)
 
 	def on_my_ping(self):
 		emit('my_pong')
