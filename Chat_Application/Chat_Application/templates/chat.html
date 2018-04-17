@@ -17,7 +17,7 @@
                         </tr>
                     <tbody id="users"></tbody>
                 </table>
-                <button id="logout" style="color:black"><font color=white>Logout</button>
+                <button id="logout" style="color:black"><font color=white>Logout</font></button>
             </div>
             <div id="message_box" class="col-md-8 " style="visibility:hidden;">
               <div class="row-md-10 ">
@@ -60,9 +60,12 @@
               {
                   if (user == my_username)
                   {
-                      user_list += '<tr><td><a href="#"><font color=red><span class="glyphicon glyphicon-user"></span> ' + user + '</td></tr></font>';
+                      user_list += '<tr><td><a href="#"><font color=red><span class="glyphicon glyphicon-user"></span> ' + user +'</td></tr></font>';
                   } else {
-                      user_list += '<tr><td><a href="#" class="user-list" data-id="' + user + '"><span class="glyphicon glyphicon-user"></span> ' + user + ' </td></tr>';
+                    if(user.state)
+                      user_list += '<tr><td><a href="#" class="user-list" data-id="' + user + '"><span class="glyphicon glyphicon-user"></span> ' + user + '       [ONLINE]</td></tr>';
+                    else
+                      user_list += '<tr><td><a href="#" class="user-list" data-id="' + user + '"><font color=gray><span class="glyphicon glyphicon-user"></span> ' + user + '       [OFFLINE]</td></tr></font>';
                   }
               });
               $('#users').html(user_list)
@@ -78,7 +81,7 @@
                         {
                             user_list += '<tr><td><a href="#"><font color=red><span class="glyphicon glyphicon-user"></span> ' + user + '</td></tr></font>';
                         } else {
-                            user_list += '<tr><td><a href="#" class="user-list" data-id="' + user + '"><span class="glyphicon glyphicon-user"></span> ' + user + ' </td></tr>';
+                            user_list += '<tr><td><a href="#" class="user-list" data-id="' + user + '"><span class="glyphicon glyphicon-user"></span> ' + user + '    [ONLINE]</td></tr>';
                         }
                     });
                     $('#users').html(user_list)

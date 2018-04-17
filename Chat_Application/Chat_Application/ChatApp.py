@@ -1,23 +1,28 @@
 from flask import Flask, render_template, session, request, redirect,  url_for
 from flask_socketio import *
-
+from threading import Lock
 async_mode = None
 
 app = Flask(__name__, static_url_path='/static')
 app.config['SECRET_KEY'] = "s3cr3t!"
 
-socketio = SocketIO(app, async_mode=async_mode)
+socketio = SocketIO(app, async_mode='threading')
 
 users = {}
 clients = []
 rooms = []
 thread = None
+thread_lock = Lock()
+
 
 def background_thread():
 	while True:
 		for it in users:
-			it['state'] = False
-			emit('my ping', '  ', room=it['sid'])
+			with app.app_context():
+				users[it]['state'] = False
+				print(it)
+				print(users[it])
+				emit('my ping', '  ', room=users[it]['sid'], namespace='/chat')
 		socketio.sleep(15)
 
 def get_username(sid):
@@ -40,14 +45,15 @@ def user_check(username):
 
 @app.route('/<string:username>')
 def main_chat(username):
-	return render_template('chat.html', async_mode=socketio.async_mode)
+	return render_template('chat.html', 'threading')
 
 class WebChat(Namespace):
 	def on_connect(self):
 		global thread
 		clients.append(request.sid)
-		if thread is None:
-			thread = socketio.start_background_task(target=background_thread)
+		with thread_lock:
+			if thread is None:
+				thread = socketio.start_background_task(target=background_thread)
 
 	def on_register(self, message):
 		users[message['user']] = {'sid': request.sid, 'ip': request.remote_addr, 'state':True}
