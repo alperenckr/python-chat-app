@@ -75,15 +75,11 @@ class WebChat(Namespace):
 		if message['me']+message['user'] not in rooms:
 			emit('take_message', message, room=message['user']+message['me'])
 
-<<<<<<< HEAD
-    #def on_message_sending(self,message):
-=======
 
 
 
 	def on_message(self,message):
 		print(message)
->>>>>>> f3dcd7736e5b797dc3634bdd50c458b4cd49cca7
 
 	def on_my_ping(self):
 		emit('my_pong')

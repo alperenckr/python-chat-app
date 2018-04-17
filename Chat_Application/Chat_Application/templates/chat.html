@@ -75,16 +75,9 @@
                 socket.emit('private_message_request', { user: user_name, me: my_username });
                 return false;
             });
-<<<<<<< HEAD
-    
-            socket.on('chat_request', function (msg)
-            {
-              var ans = window.confirm(msg+' isimli kullanıcı size mesaj göndermek istiyor.')
-=======
 
             socket.on('chat_request',function(msg){
               var ans = window.confirm(msg+' sizinle sicak bir sohbete girmek istiyor.')
->>>>>>> f3dcd7736e5b797dc3634bdd50c458b4cd49cca7
               socket.emit('permission', {
                 perm: ans,
                 user: msg,
