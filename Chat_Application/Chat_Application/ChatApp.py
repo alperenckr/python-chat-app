@@ -13,16 +13,18 @@ clients = []
 rooms = []
 thread = None
 thread_lock = Lock()
-
+lock = False
 
 def background_thread():
 	while True:
+		lock = True
 		for it in users:
 			with app.app_context():
-				users[it]['state'] = False
+				users[it]['state'] = "offline"
 				print(it)
 				print(users[it])
 				emit('my ping', '  ', room=users[it]['sid'], namespace='/chat')
+		lock = False
 		socketio.sleep(15)
 
 def get_username(sid):
@@ -45,7 +47,7 @@ def user_check(username):
 
 @app.route('/<string:username>')
 def main_chat(username):
-	return render_template('chat.html', 'threading')
+	return render_template('chat.html')
 
 class WebChat(Namespace):
 	def on_connect(self):
@@ -56,7 +58,8 @@ class WebChat(Namespace):
 				thread = socketio.start_background_task(target=background_thread)
 
 	def on_register(self, message):
-		users[message['user']] = {'sid': request.sid, 'ip': request.remote_addr, 'state':True}
+		users[message['user']] = {'sid': request.sid, 'ip': request.remote_addr, 'state':"online"}
+		print('{0} is connected to the server and the ip is {1}'.format(message['user'], request.remote_addr))
 		emit('user_response', {
 				'type': 'connect',
 				'message': '{0} is connected to the server'.format(message['user']),
@@ -84,12 +87,15 @@ class WebChat(Namespace):
 		if message['me']+message['user'] not in rooms:
 			emit('take_message', message, room=message['user']+message['me'])
 
-	def on_my_pong(self,message):
-		users[message]['state'] = True
+	def on_mypong(self,message):
+		users[message]['state'] = "online"
+		print("pong")
+		while lock is True:
+			socketio.sleep(1)
 		emit('update user list', users)
 
 	def on_logout(self, message):
-		users[message]['state']= False
+		users[message]['state']= "offlie"
 
 socketio.on_namespace(WebChat('/chat'))
 

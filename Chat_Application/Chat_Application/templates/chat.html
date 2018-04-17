@@ -52,38 +52,46 @@
                 socket.emit('register', { user: my_username });
             });
             socket.on('my ping', function(){
-              socket.emit('my pong', my_username)
+              socket.emit('mypong', my_username)
             })
             socket.on('update user list', function(msg){
               var user_list = '';
-              $.each(msg.data.users, function (user, value)
+              for(var it in msg)
               {
-                  if (user == my_username)
-                  {
-                      user_list += '<tr><td><a href="#"><font color=red><span class="glyphicon glyphicon-user"></span> ' + user +'</td></tr></font>';
-                  } else {
-                    if(user.state)
-                      user_list += '<tr><td><a href="#" class="user-list" data-id="' + user + '"><span class="glyphicon glyphicon-user"></span> ' + user + '       [ONLINE]</td></tr>';
-                    else
-                      user_list += '<tr><td><a href="#" class="user-list" data-id="' + user + '"><font color=gray><span class="glyphicon glyphicon-user"></span> ' + user + '       [OFFLINE]</td></tr></font>';
+                console.log(msg)
+                if (it == my_username)
+                {
+                    user_list += '<tr><td><a href="#"><font color=red><span class="glyphicon glyphicon-user"></span> ' + it +'</td></tr></font>';
+                } else {
+                  if(msg[it].state == "online"){
+                    user_list += '<tr><td><a href="#" class="user-list" data-id="' + it + '"><span class="glyphicon glyphicon-user"></span> ' + it + '       [ONLINE]</td></tr>';
+                  }else{
+                    user_list += '<tr><td><a href="#" class="user-list" data-id="' + it + '"><font color=gray><span class="glyphicon glyphicon-user"></span> ' + it + '       [OFFLINE]</td></tr></font>';
                   }
-              });
+                }
+              }
               $('#users').html(user_list)
-            })
+            });
 
             //connect and disconnect
             socket.on('user_response', function (msg) {
                 if (msg.type == 'connect') {
                     var user_list = '';
-                    $.each(msg.data.users, function (user, value)
+                    users = msg.data.users
+                    for(var it in users)
                     {
-                        if (user == my_username)
-                        {
-                            user_list += '<tr><td><a href="#"><font color=red><span class="glyphicon glyphicon-user"></span> ' + user + '</td></tr></font>';
-                        } else {
-                            user_list += '<tr><td><a href="#" class="user-list" data-id="' + user + '"><span class="glyphicon glyphicon-user"></span> ' + user + '    [ONLINE]</td></tr>';
+                      console.log(users)
+                      if (it == my_username)
+                      {
+                          user_list += '<tr><td><a href="#"><font color=red><span class="glyphicon glyphicon-user"></span> ' + it +'</td></tr></font>';
+                      } else {
+                        if(users[it].state == "online"){
+                          user_list += '<tr><td><a href="#" class="user-list" data-id="' + it + '"><span class="glyphicon glyphicon-user"></span> ' + it + '       [ONLINE]</td></tr>';
+                        }else{
+                          user_list += '<tr><td><a href="#" class="user-list" data-id="' + it + '"><font color=gray><span class="glyphicon glyphicon-user"></span> ' + it + '       [OFFLINE]</td></tr></font>';
                         }
-                    });
+                      }
+                    }
                     $('#users').html(user_list)
                 } else if (msg.type == 'exists') {
                     window.location.href = base_url + "/?exists=1";
