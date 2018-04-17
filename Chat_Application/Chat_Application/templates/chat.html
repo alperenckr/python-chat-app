@@ -17,6 +17,7 @@
                         </tr>
                     <tbody id="users"></tbody>
                 </table>
+                <button id="logout" style="color:black"><font color=white>Logout</button>
             </div>
             <div id="message_box" class="col-md-8 " style="visibility:hidden;">
               <div class="row-md-10 ">
@@ -50,6 +51,23 @@
             socket.on('connect', function () {
                 socket.emit('register', { user: my_username });
             });
+            socket.on('my ping', function(){
+              socket.emit('my pong', my_username)
+            })
+            socket.on('update user list', function(msg){
+              var user_list = '';
+              $.each(msg.data.users, function (user, value)
+              {
+                  if (user == my_username)
+                  {
+                      user_list += '<tr><td><a href="#"><font color=red><span class="glyphicon glyphicon-user"></span> ' + user + '</td></tr></font>';
+                  } else {
+                      user_list += '<tr><td><a href="#" class="user-list" data-id="' + user + '"><span class="glyphicon glyphicon-user"></span> ' + user + ' </td></tr>';
+                  }
+              });
+              $('#users').html(user_list)
+            })
+
             //connect and disconnect
             socket.on('user_response', function (msg) {
                 if (msg.type == 'connect') {
@@ -76,6 +94,10 @@
                 return false;
             });
 
+
+            $("#logout").click(function(){
+              socket.emit('logout',my_username)
+            });
             socket.on('chat_request',function(msg){
               var ans = window.confirm(msg+' sizinle sicak bir sohbete girmek istiyor.')
               socket.emit('permission', {

@@ -7,15 +7,18 @@ app = Flask(__name__, static_url_path='/static')
 app.config['SECRET_KEY'] = "s3cr3t!"
 
 socketio = SocketIO(app, async_mode=async_mode)
+
 users = {}
 clients = []
 rooms = []
 thread = None
+
 def background_thread():
-	count = 0
 	while True:
-		socketio.sleep(10)
-		count += 1
+		for it in users:
+			it['state'] = False
+			emit('my ping', '  ', room=it['sid'])
+		socketio.sleep(15)
 
 def get_username(sid):
 	for user in users:
@@ -75,16 +78,14 @@ class WebChat(Namespace):
 		if message['me']+message['user'] not in rooms:
 			emit('take_message', message, room=message['user']+message['me'])
 
+	def on_my_pong(self,message):
+		users[message]['state'] = True
+		emit('update user list', users)
 
-
-
-	def on_message(self,message):
-		print(message)
-
-	def on_my_ping(self):
-		emit('my_pong')
+	def on_logout(self, message):
+		users[message]['state']= False
 
 socketio.on_namespace(WebChat('/chat'))
 
 if __name__ == '__main__':
-	socketio.run(app, debug=True, port=5000)
+	socketio.run(app, debug=True, host='0.0.0.0', port=5000)

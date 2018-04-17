@@ -29,4 +29,4 @@ def message_received(json):
 
 
 if __name__ == '__main__':
-    socketio.run(app,'127.0.0.1',80)
+    socketio.run(app)
