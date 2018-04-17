@@ -74,7 +74,8 @@
                 return false;
             });
     
-            socket.on('chat_request',function(msg){
+            socket.on('chat_request', function (msg)
+            {
               var ans = window.confirm(msg+' isimli kullanıcı size mesaj göndermek istiyor.')
               socket.emit('permission', {
                 perm: ans,
