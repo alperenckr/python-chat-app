@@ -19,18 +19,19 @@
                 </table>
             </div>
             <div id="message_box" class="col-md-8 " style="visibility:hidden;">
-                <div class="row-md-10 ">
-                    <div class="message_holder">
-                    </div>
+              <div class="row-md-10 ">
+                <div class="message_holder" id="messages">
                 </div>
-                    <div class="message_send_box row row-md-2">
-                        <div class="col-md-10 ">
-                            <input type="text" id="message" class="message form-control" placeholder="Messages">
-                        </div>
-                        <div class="col-md-2">
-                            <button type="submit" id="send" class="btn btn-block btn-success"><span class="glyphicon glyphicon-send"></span>Send</button>
-                        </div>
-                    </div>
+              </div>
+              <div class="message_send_box row row-md-2">
+                <div class="col-md-10 ">
+                  <input type="text" id="message" class="message form-control" placeholder="Messages">
+                </div>
+                  <div class="col-md-2">
+                  <button type="submit" id="send" class="btn btn-block btn-success"><span class="glyphicon glyphicon-send"></span>Send</button>
+                </div>
+              </div>
+
             </div>
         </div>
     </div>
@@ -44,6 +45,7 @@
             var base_url = location.protocol + '//' + document.domain + ':' + location.port;
             var my_username = window.location.pathname.split('/')[1];
             var socket = io.connect(base_url + namespace);
+            var requested_user = '';
             /// kullanıcı listesine dict formatında username gönderilir.
             socket.on('connect', function () {
                 socket.emit('register', { user: my_username });
@@ -73,28 +75,53 @@
                 socket.emit('private_message_request', { user: user_name, me: my_username });
                 return false;
             });
+<<<<<<< HEAD
     
             socket.on('chat_request', function (msg)
             {
               var ans = window.confirm(msg+' isimli kullanıcı size mesaj göndermek istiyor.')
+=======
+
+            socket.on('chat_request',function(msg){
+              var ans = window.confirm(msg+' sizinle sicak bir sohbete girmek istiyor.')
+>>>>>>> f3dcd7736e5b797dc3634bdd50c458b4cd49cca7
               socket.emit('permission', {
                 perm: ans,
                 user: msg,
                 me: my_username
               });
+              if(ans == true){
+                $("#messages").empty();
+                $("#message_box").attr("style","visibility:visible");
+                requested_user = msg;
+              }
             });
-            //Ekranda mesaj kutusunu ve gönderme butonunu göstermek için izin verildikten sonra çalışır.
+
             socket.on('allowed', function(msg){
               $("#message_box").attr("style","visibility:visible");
-            });
-            $('#send').on('click', function () {
-                var message = $('#message').val();
-                console.log(message);
-
+              requested_user = msg.user;
             });
 
+            socket.on('already_allowed', function(msg){
+              $("#message_box").attr("style","visibility:visible");
+              requested_user = msg.user;
+            });
+
+            $('#send').click(function(){
+              if($('#message').val() != '' && $('#message').val() != null && requested_user != ''){
+                socket.emit('sendmessage', {
+                  me: my_username,
+                  user: requested_user,
+                  data: $('#message').val()
+                });
+              }
+            });
+
+            socket.on('take_message', function(msg){
+              $('#messages').append(msg.data)
 
 
+            });
         })
     </script>
     <script type="text/javascript" src="{{url_for('static', filename='js/bootstrap.js')}}"></script>
