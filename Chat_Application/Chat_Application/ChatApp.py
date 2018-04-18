@@ -15,7 +15,6 @@ thread_lock = Lock()
 
 def background_thread():
 	while True:
-		print('ping')
 		for it in users:
 			with app.app_context():
 				emit('my ping', '  ', room=users[it]['sid'], namespace='/chat')
@@ -42,6 +41,8 @@ def user_check(username):
 @app.route('/<string:username>')
 def main_chat(username):
 	return render_template('chat.html')
+
+
 
 class WebChat(Namespace):
 	def on_connect(self):
@@ -80,11 +81,9 @@ class WebChat(Namespace):
 			emit('allowed', { 'user': message['me'], 'room': message['user']+message['me']},room=users[message['user']]['sid'])
 
 	def on_sendmessage(self,message):
-		print("asdasdasdasdasd")
 		emit('take_message', message, room=message['me']+message['user'])
 		if message['me']+message['user'] not in rooms:
 			emit('take_message', message, room=message['user']+message['me'])
-			print("a")
 
 	def on_mypong(self,message):
 		users[message]['state'] = "online"
