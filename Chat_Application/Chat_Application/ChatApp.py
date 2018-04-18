@@ -6,25 +6,19 @@ async_mode = None
 app = Flask(__name__, static_url_path='/static')
 app.config['SECRET_KEY'] = "s3cr3t!"
 
-socketio = SocketIO(app, async_mode='threading')
+socketio = SocketIO(app, async_mode='eventlet')
 
 users = {}
-clients = []
 rooms = []
 thread = None
 thread_lock = Lock()
-lock = False
 
 def background_thread():
 	while True:
-		lock = True
+		print('ping')
 		for it in users:
 			with app.app_context():
-				users[it]['state'] = "offline"
-				print(it)
-				print(users[it])
 				emit('my ping', '  ', room=users[it]['sid'], namespace='/chat')
-		lock = False
 		socketio.sleep(15)
 
 def get_username(sid):
@@ -52,7 +46,6 @@ def main_chat(username):
 class WebChat(Namespace):
 	def on_connect(self):
 		global thread
-		clients.append(request.sid)
 		with thread_lock:
 			if thread is None:
 				thread = socketio.start_background_task(target=background_thread)
@@ -73,7 +66,12 @@ class WebChat(Namespace):
 			join_room(message['me']+message['user'])
 			emit('chat_request',message['me'],room=users[message['user']]['sid'])
 		else:
-			emit('already allowed', message, room=request.sid)
+			emit('already allowed', message['me'], room=request.sid)
+			for it in users:
+				if it == message['user']+message['me'] or it == message['me']+message['user']:
+					join_room(it)
+
+
 
 	def on_permission(self,message):
 		if message['perm'] is True:
@@ -89,13 +87,16 @@ class WebChat(Namespace):
 
 	def on_mypong(self,message):
 		users[message]['state'] = "online"
-		print("pong")
-		while lock is True:
-			socketio.sleep(1)
+		print("ping")
 		emit('update user list', users)
 
 	def on_logout(self, message):
-		users[message]['state']= "offlie"
+		users[message]['state']= "offline"
+
+	def on_disconnect(self):
+		for it in users:
+			if users[it]['sid'] == request.sid:
+				users[it]['state'] = 'offline'
 
 socketio.on_namespace(WebChat('/chat'))
 

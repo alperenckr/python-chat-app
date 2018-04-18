@@ -31,12 +31,9 @@
                   $('form#login').submit(function (event) {
 							    		 var url_check = "{{url_for('index')}}check/" + $('#username').val();
                        $.get(url_check, function (data) {
-										       if (data != 0) {
-											         alert('Please use another username');
-										       }
-											     else {
+
 											       window.location.href = "{{url_for('index')}}" + $('#username').val();
-										       }
+
 									     });
 										   return false;
 								  });

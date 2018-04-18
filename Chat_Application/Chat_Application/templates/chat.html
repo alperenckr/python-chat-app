@@ -110,7 +110,7 @@
               socket.emit('logout',my_username)
             });
             socket.on('chat_request',function(msg){
-              var ans = window.confirm(msg+' sizinle sicak bir sohbete girmek istiyor.')
+              var ans = window.confirm(msg+' wants to talk with you.')
               socket.emit('permission', {
                 perm: ans,
                 user: msg,
@@ -129,8 +129,9 @@
             });
 
             socket.on('already_allowed', function(msg){
+              $("#messages").empty();
               $("#message_box").attr("style","visibility:visible");
-              requested_user = msg.user;
+              requested_user = msg;
             });
 
             $('#send').click(function(){
