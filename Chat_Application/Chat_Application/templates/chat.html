@@ -12,26 +12,26 @@
             <!-- Bağlı olan kullanıcıları gösterme kısmı-->
             <div class="col-md-4 scrollit">
                 <table class="table">
-                        <tr>
-                            <th>Users</th>
-                        </tr>
+                    <tr>
+                        <th>Users</th>
+                    </tr>
                     <tbody id="users"></tbody>
                 </table>
-                <button id="logout" style="color:black"><font color=white>Logout</font></button>
+                <button id="logout" style="color:black"><font color="white">Logout</font></button>
             </div>
             <div id="message_box" class="col-md-8 " style="visibility:hidden;">
-              <div class="row-md-10 ">
-                <div class="message_holder" id="messages">
+                <div class="row-md-10 ">
+                    <div class="message_holder" id="messages">
+                    </div>
                 </div>
-              </div>
-              <div class="message_send_box row row-md-2">
-                <div class="col-md-10 ">
-                  <input type="text" id="message" class="message form-control" placeholder="Messages">
+                <div class="message_send_box row row-md-2">
+                    <div class="col-md-10 ">
+                        <input type="text" id="message" class="message form-control" placeholder="Messages">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" id="send" class="btn btn-success btn-block "><span class="glyphicon glyphicon-send"></span>Send</button>
+                    </div>
                 </div>
-                  <div class="col-md-2">
-                  <button type="submit" id="send" class="btn btn-block btn-success"><span class="glyphicon glyphicon-send"></span>Send</button>
-                </div>
-              </div>
 
             </div>
         </div>
@@ -39,22 +39,24 @@
     <script type="text/javascript" src="{{url_for('static', filename='js/jquery.3-1-1.min.js')}}"></script>
     <script type="text/javascript" src="{{url_for('static', filename='js/socket.io.min.js')}}"></script>
     <script type="text/javascript">
-        var room_state = '';
-        var user_chat_array = [];
-        $(document).ready(function () {
+        $(document).ready(function ()
+        {
             namespace = "/chat";
             var base_url = location.protocol + '//' + document.domain + ':' + location.port;
             var my_username = window.location.pathname.split('/')[1];
             var socket = io.connect(base_url + namespace);
             var requested_user = '';
             /// kullanıcı listesine dict formatında username gönderilir.
-            socket.on('connect', function () {
+            socket.on('connect', function ()
+            {
                 socket.emit('register', { user: my_username });
             });
-            socket.on('my ping', function(){
+            socket.on('my ping', function()
+            {
               socket.emit('mypong', my_username)
             })
-            socket.on('update user list', function(msg){
+            socket.on('update user list', function(msg)
+            {
               var user_list = '';
               for(var it in msg)
               {
@@ -62,33 +64,36 @@
                 if (it == my_username)
                 {
                     user_list += '<tr><td><a href="#"><font color=red><span class="glyphicon glyphicon-user"></span> ' + it +'</td></tr></font>';
-                } else {
-                  if(msg[it].state == "online"){
+                } else
+                {
+                  if(msg[it].state == "online")
+                  {
                     user_list += '<tr><td><a href="#" class="user-list" data-id="' + it + '"><span class="glyphicon glyphicon-user"></span> ' + it + '       [ONLINE]</td></tr>';
-                  }else{
+                  }
+                  else
+                  {
                     user_list += '<tr><td><a href="#" class="user-list" data-id="' + it + '"><font color=gray><span class="glyphicon glyphicon-user"></span> ' + it + '       [OFFLINE]</td></tr></font>';
                   }
                 }
               }
               $('#users').html(user_list)
             });
-
             //connect and disconnect
             socket.on('user_response', function (msg) {
                 if (msg.type == 'connect') {
                     var user_list = '';
                     users = msg.data.users
-                    for(var it in users)
+                    for(var id in users)
                     {
                       console.log(users)
-                      if (it == my_username)
+                      if (id == my_username)
                       {
-                          user_list += '<tr><td><a href="#"><font color=red><span class="glyphicon glyphicon-user"></span> ' + it +'</td></tr></font>';
+                          user_list += '<tr><td><a href="#"><font color=red><span class="glyphicon glyphicon-user"></span> ' + id +'</td></tr></font>';
                       } else {
-                        if(users[it].state == "online"){
-                          user_list += '<tr><td><a href="#" class="user-list" data-id="' + it + '"><span class="glyphicon glyphicon-user"></span> ' + it + '       [ONLINE]</td></tr>';
+                        if(users[id].state == "online"){
+                          user_list += '<tr><td><a href="#" class="user-list" data-id="' + id + '"><span class="glyphicon glyphicon-user"></span> ' + id + '       [ONLINE]</td></tr>';
                         }else{
-                          user_list += '<tr><td><a href="#" class="user-list" data-id="' + it + '"><font color=gray><span class="glyphicon glyphicon-user"></span> ' + it + '       [OFFLINE]</td></tr></font>';
+                          user_list += '<tr><td><a href="#" class="user-list" data-id="' + id + '"><font color=gray><span class="glyphicon glyphicon-user"></span> ' + id + '       [OFFLINE]</td></tr></font>';
                         }
                       }
                     }
@@ -108,27 +113,33 @@
 
             $("#logout").click(function(){
               socket.emit('logout',my_username)
+              window.location.href = "{{url_for('index')}}";
             });
-            socket.on('chat_request',function(msg){
+            socket.on('chat_request',function(msg)
+            {
+              //Kullanıcıya sohbet isteği gönderir
               var ans = window.confirm(msg+' wants to talk with you.')
               socket.emit('permission', {
                 perm: ans,
                 user: msg,
                 me: my_username
               });
-              if(ans == true){
+              if(ans == true)
+              {
                 $("#messages").empty();
                 $("#message_box").attr("style","visibility:visible");
                 requested_user = msg;
               }
             });
-
-            socket.on('allowed', function(msg){
+            // Kullanıcı mesaj isteğini kabul ettikten sonra çalışır.
+            socket.on('allowed', function(msg)
+            {
+              $("#messages").empty();
               $("#message_box").attr("style","visibility:visible");
               requested_user = msg.user;
             });
-
-            socket.on('already_allowed', function(msg){
+            socket.on('already_allowed', function(msg)
+            {
               $("#messages").empty();
               $("#message_box").attr("style","visibility:visible");
               requested_user = msg;
@@ -143,11 +154,16 @@
                 });
               }
             });
-
-            socket.on('take_message', function(msg){
-              $('#messages').append(msg.data)
-
-
+            socket.on('take_message', function(msg)
+            {
+              if(msg.me==my_username)
+              {
+                  $('#messages').append('<div style="background-color:#68838b; text-align:right;height:30px"><font style="color: #000000; font-size:17">'+msg.data+'<b>'+' You'+'</b></font></div>')
+              }
+              else
+              {
+                  $('#messages').append('<div style="background-color:#f5f5dc; text-align:left; height:30px"> <b><font style="color: #000000; font-size:17">'+msg.me+'</b> '+msg.data+'</font></div>')
+              }
             });
         })
     </script>

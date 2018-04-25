@@ -15,7 +15,6 @@ thread_lock = Lock()
 
 def background_thread():
 	while True:
-		print('ping')
 		for it in users:
 			with app.app_context():
 				emit('my ping', '  ', room=users[it]['sid'], namespace='/chat')
@@ -43,6 +42,7 @@ def user_check(username):
 def main_chat(username):
 	return render_template('chat.html')
 
+
 class WebChat(Namespace):
 	def on_connect(self):
 		global thread
@@ -62,35 +62,38 @@ class WebChat(Namespace):
 			}, broadcast=True)
 
 	def on_private_message_request(self, message):
+		print(message)
 		if message['user']+message['me'] not in rooms and message['me']+message['user'] not in rooms:
 			join_room(message['me']+message['user'])
 			emit('chat_request',message['me'],room=users[message['user']]['sid'])
 		else:
-			emit('already allowed', message['me'], room=request.sid)
+			print("test", message)
 			for it in users:
 				if it == message['user']+message['me'] or it == message['me']+message['user']:
 					join_room(it)
-
-
+					emit('already allowed', message['me'], it)
 
 	def on_permission(self,message):
+		print(message)
 		if message['perm'] is True:
 			join_room(message['user']+message['me'])
 			rooms.append(message['user']+message['me'])
 			emit('allowed', { 'user': message['me'], 'room': message['user']+message['me']},room=users[message['user']]['sid'])
 
 	def on_sendmessage(self,message):
-		print("asdasdasdasdasd")
+		print(message)
 		emit('take_message', message, room=message['me']+message['user'])
 		if message['me']+message['user'] not in rooms:
 			emit('take_message', message, room=message['user']+message['me'])
 
 	def on_mypong(self,message):
+		print(message)
 		users[message]['state'] = "online"
-		print("ping")
+		print("ping") #15 sn aralıkla bakar
 		emit('update user list', users)
 
 	def on_logout(self, message):
+		print("logout: "+message)
 		users[message]['state']= "offline"
 
 	def on_disconnect(self):
@@ -101,4 +104,4 @@ class WebChat(Namespace):
 socketio.on_namespace(WebChat('/chat'))
 
 if __name__ == '__main__':
-	socketio.run(app, debug=True, host='0.0.0.0', port=5000)
+	socketio.run(app, host='0.0.0.0', port=5000)
