@@ -127,12 +127,10 @@
               $("#message_box").attr("style","visibility:visible");
               requested_user = msg.user;
             });
-
             socket.on('already_allowed', function(msg){
               $("#message_box").attr("style","visibility:visible");
               requested_user = msg.user;
             });
-
             $('#send').click(function(){
               if($('#message').val() != '' && $('#message').val() != null && requested_user != ''){
                 socket.emit('sendmessage', {
@@ -142,11 +140,8 @@
                 });
               }
             });
-
             socket.on('take_message', function(msg){
               $('#messages').append(msg.data)
-
-
             });
         })
     </script>
