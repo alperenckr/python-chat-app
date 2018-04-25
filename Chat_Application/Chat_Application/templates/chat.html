@@ -39,8 +39,6 @@
     <script type="text/javascript" src="{{url_for('static', filename='js/jquery.3-1-1.min.js')}}"></script>
     <script type="text/javascript" src="{{url_for('static', filename='js/socket.io.min.js')}}"></script>
     <script type="text/javascript">
-        var room_state = '';
-        var user_chat_array = [];
         $(document).ready(function ()
         {
             namespace = "/chat";
@@ -126,18 +124,20 @@
                 user: msg,
                 me: my_username
               });
-              if(ans == true){
+              if(ans == true)
+              {
                 $("#messages").empty();
                 $("#message_box").attr("style","visibility:visible");
                 requested_user = msg;
               }
             });
             // Kullanıcı mesaj isteğini kabul ettikten sonra çalışır.
-            socket.on('allowed', function(msg){
+            socket.on('allowed', function(msg)
+            {
+              $("#messages").empty();
               $("#message_box").attr("style","visibility:visible");
               requested_user = msg.user;
             });
-
             socket.on('already_allowed', function(msg)
             {
               $("#messages").empty();
