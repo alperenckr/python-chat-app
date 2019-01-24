@@ -6,25 +6,18 @@ async_mode = None
 app = Flask(__name__, static_url_path='/static')
 app.config['SECRET_KEY'] = "s3cr3t!"
 
-socketio = SocketIO(app, async_mode='threading')
+socketio = SocketIO(app, async_mode='eventlet')
 
 users = {}
-clients = []
 rooms = []
 thread = None
 thread_lock = Lock()
-lock = False
 
 def background_thread():
 	while True:
-		lock = True
 		for it in users:
 			with app.app_context():
-				users[it]['state'] = "offline"
-				print(it)
-				print(users[it])
 				emit('my ping', '  ', room=users[it]['sid'], namespace='/chat')
-		lock = False
 		socketio.sleep(15)
 
 def get_username(sid):
@@ -49,10 +42,10 @@ def user_check(username):
 def main_chat(username):
 	return render_template('chat.html')
 
+
 class WebChat(Namespace):
 	def on_connect(self):
 		global thread
-		clients.append(request.sid)
 		with thread_lock:
 			if thread is None:
 				thread = socketio.start_background_task(target=background_thread)
@@ -69,35 +62,46 @@ class WebChat(Namespace):
 			}, broadcast=True)
 
 	def on_private_message_request(self, message):
+		print(message)
 		if message['user']+message['me'] not in rooms and message['me']+message['user'] not in rooms:
 			join_room(message['me']+message['user'])
 			emit('chat_request',message['me'],room=users[message['user']]['sid'])
 		else:
-			emit('already allowed', message, room=request.sid)
+			print("test", message)
+			for it in users:
+				if it == message['user']+message['me'] or it == message['me']+message['user']:
+					join_room(it)
+					emit('already allowed', message['me'], it)
 
 	def on_permission(self,message):
+		print(message)
 		if message['perm'] is True:
 			join_room(message['user']+message['me'])
 			rooms.append(message['user']+message['me'])
 			emit('allowed', { 'user': message['me'], 'room': message['user']+message['me']},room=users[message['user']]['sid'])
 
 	def on_sendmessage(self,message):
-		print("asdasdasdasdasd")
+		print(message)
 		emit('take_message', message, room=message['me']+message['user'])
 		if message['me']+message['user'] not in rooms:
 			emit('take_message', message, room=message['user']+message['me'])
 
 	def on_mypong(self,message):
+		print(message)
 		users[message]['state'] = "online"
-		print("pong")
-		while lock is True:
-			socketio.sleep(1)
+		print("ping") #15 sn aralıkla bakar
 		emit('update user list', users)
 
 	def on_logout(self, message):
-		users[message]['state']= "offlie"
+		print("logout: "+message)
+		users[message]['state']= "offline"
+
+	def on_disconnect(self):
+		for it in users:
+			if users[it]['sid'] == request.sid:
+				users[it]['state'] = 'offline'
 
 socketio.on_namespace(WebChat('/chat'))
 
 if __name__ == '__main__':
-	socketio.run(app, debug=True, host='0.0.0.0', port=5000)
+	socketio.run(app, host='0.0.0.0', port=5000)
